@@ -1,34 +1,44 @@
 "use server";
 
-import { z } from "zod";
-import { authorizedAction } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/server";
 
-const consentSchema = z.object({
-  authorizationId: z.string(),
-  action: z.enum(["approve", "deny"]),
-});
+export type ConsentState = {
+  error?: string;
+  redirectUrl?: string;
+} | null;
 
-export const decideConsent = authorizedAction
-  .input(consentSchema)
-  .run(async ({ ctx: { auth }, input: { action, authorizationId } }) => {
-    const { data, error } =
-      action === "approve"
-        ? await auth.oauth.approveAuthorization(authorizationId, {
-            skipBrowserRedirect: true,
-          })
-        : await auth.oauth.denyAuthorization(authorizationId, {
-            skipBrowserRedirect: true,
-          });
+export async function decideConsent(
+  _state: ConsentState,
+  formData: FormData,
+): Promise<ConsentState> {
+  const authorizationId = String(formData.get("authorizationId") ?? "");
+  const decision = formData.get("action");
 
-    if (error) {
-      throw error;
-    }
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) {
+    return { error: "You must be signed in to continue." };
+  }
 
-    if (!data.redirect_url) {
-      throw new Error(
+  const { data, error } =
+    decision === "approve"
+      ? await supabase.auth.oauth.approveAuthorization(authorizationId, {
+          skipBrowserRedirect: true,
+        })
+      : await supabase.auth.oauth.denyAuthorization(authorizationId, {
+          skipBrowserRedirect: true,
+        });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (!data.redirect_url) {
+    return {
+      error:
         "The server did not return a redirect. Start again from your OAuth client.",
-      );
-    }
+    };
+  }
 
-    return data;
-  });
+  return { redirectUrl: data.redirect_url };
+}

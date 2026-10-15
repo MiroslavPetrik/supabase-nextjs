@@ -1,24 +1,24 @@
 "use client";
 
-import { Form } from "react-form-action/client";
-import { SubmitButton } from "@/components/submit-button";
-
-import { Value } from "./form";
+import { ConsentSubmitButton, useDecideConsent } from "./decide-consent";
 
 export function ApproveButton({
   authorizationId,
 }: {
   authorizationId: string;
 }) {
+  const { formAction, isPending } = useDecideConsent();
+
   return (
-    <Form>
-      <Value name="authorizationId" value={authorizationId} />
-      <Value name="action" value="approve" />
-      <SubmitButton size="sm">
-        {({ isPending, active }) =>
-          isPending && active ? "Allowing..." : "Allow access"
-        }
-      </SubmitButton>
-    </Form>
+    <form action={formAction}>
+      <input type="hidden" name="authorizationId" value={authorizationId} />
+      <input type="hidden" name="action" value="approve" />
+      <ConsentSubmitButton
+        idleLabel="Allow access"
+        pendingLabel="Allowing..."
+        variant="default"
+        disabled={isPending}
+      />
+    </form>
   );
 }
