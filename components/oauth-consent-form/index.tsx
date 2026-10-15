@@ -5,7 +5,7 @@ import { ConsentDetails } from "./components/consent-details";
 import { ConsentDecision } from "./components/consent-decision";
 import { ConsentShell } from "./components/consent-shell";
 
-import { AuthorizationErrorBoundary } from "./error";
+import { AuthorizationErrorBoundary } from "./components/error-boundary";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/server";

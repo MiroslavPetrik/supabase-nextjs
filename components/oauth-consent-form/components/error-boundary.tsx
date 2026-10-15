@@ -1,7 +1,7 @@
 "use client";
 
 import { catchError } from "next/error";
-import { ConsentShell } from "./components/consent-shell";
+import { ConsentShell } from "./consent-shell";
 
 export const AuthorizationErrorBoundary = catchError(function () {
   return (
