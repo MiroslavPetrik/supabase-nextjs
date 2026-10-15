@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "shadcn:validate": "shadcn registry validate",
+    "shadcn:build": "shadcn build",
     "build": "next build",
     "start": "next start",
     "supa:start": "supabase start",

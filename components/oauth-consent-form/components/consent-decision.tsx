@@ -3,8 +3,8 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { decideConsent } from "../action";
 import { CardFooter } from "@/components/ui/card";
+import { decideConsent } from "../action";
 
 export function ConsentDecision({
   authorizationId,

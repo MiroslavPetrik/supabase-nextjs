@@ -1,5 +1,5 @@
-import { PropsWithChildren } from "react";
 import type { OAuthAuthorizationDetails } from "@supabase/supabase-js";
+import type { PropsWithChildren } from "react";
 import { CardContent } from "@/components/ui/card";
 
 export function ConsentDetails({

@@ -1,14 +1,13 @@
-import { Suspense } from "react";
-import { Card } from "@/components/ui/card";
-import { ConsentHeader } from "./components/consent-header";
-import { ConsentDetails } from "./components/consent-details";
-import { ConsentDecision } from "./components/consent-decision";
-import { ConsentShell } from "./components/consent-shell";
-
-import { AuthorizationErrorBoundary } from "./components/error-boundary";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
+import { ConsentDecision } from "./components/consent-decision";
+import { ConsentDetails } from "./components/consent-details";
+import { ConsentHeader } from "./components/consent-header";
+import { ConsentShell } from "./components/consent-shell";
+import { AuthorizationErrorBoundary } from "./components/error-boundary";
 
 type Props = {
   authorizationId: Promise<string>;
