@@ -1,6 +1,6 @@
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/server";
 import { getBaseUrl } from "@/server/baseUrl";
 
 export type OAuthConsentSearchParams = {

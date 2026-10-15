@@ -13,6 +13,7 @@ import { Alert } from "@/components/alert";
 import { AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { decideConsent } from "../action";
+import { CardFooter } from "@/components/ui/card";
 
 type DecideConsentContextValue = {
   formAction: (formData: FormData) => void;
@@ -44,15 +45,17 @@ export function DecideConsent({ children }: PropsWithChildren) {
 
   return (
     <DecideConsentContext value={{ formAction, isPending }}>
-      <div className="flex w-full flex-col gap-3">
-        {state?.error && (
-          <Alert color="failure">
-            <AlertTitle>Error</AlertTitle>
-            <p>{state.error}</p>
-          </Alert>
-        )}
-        <div className="flex justify-between gap-2">{children}</div>
-      </div>
+      <CardFooter className="justify-end">
+        <div className="flex w-full flex-col gap-3">
+          {state?.error && (
+            <Alert color="failure">
+              <AlertTitle>Error</AlertTitle>
+              <p>{state.error}</p>
+            </Alert>
+          )}
+          <div className="flex justify-between gap-2">{children}</div>
+        </div>
+      </CardFooter>
     </DecideConsentContext>
   );
 }
