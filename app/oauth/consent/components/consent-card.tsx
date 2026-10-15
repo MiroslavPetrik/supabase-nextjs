@@ -7,9 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { t } from "../cache";
-
-export async function ConsentCard({
+export function ConsentCard({
   clientName,
   clientIcon,
   children,
@@ -29,9 +27,9 @@ export async function ConsentCard({
         </div>
         <div className="space-y-1.5">
           <CardTitle className="font-medium text-lg tracking-normal">
-            {await t("authorize")} {clientName}
+            Authorize {clientName}
           </CardTitle>
-          <CardDescription>{await t("description")}</CardDescription>
+          <CardDescription>Review what this client gets access to.</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">{children}</CardContent>

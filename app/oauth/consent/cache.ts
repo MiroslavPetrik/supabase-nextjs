@@ -1,14 +1,7 @@
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { translate } from "@/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { getBaseUrl } from "@/server/baseUrl";
-
-export async function t(key: string) {
-  "use cache";
-  const { t } = await translate("oauth", { keyPrefix: "consent" });
-  return t(key);
-}
 
 export type OAuthConsentSearchParams = {
   authorization_id?: string;

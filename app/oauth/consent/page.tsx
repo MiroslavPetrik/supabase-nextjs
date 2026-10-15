@@ -1,11 +1,9 @@
-import { locale } from "next/root-params";
 import { type PageSuspend, suspend, withSuspend } from "next-suspend";
 import { Action } from "react-form-action/client";
 import { SkeletonAvatar } from "@/components/skeleton/skeleton-avatar";
 import { SkeletonLine } from "@/components/skeleton/skeleton-line";
 import { CardFooter } from "@/components/ui/card";
 import { decideConsent } from "./action";
-import { t } from "./cache";
 import { ApproveButton } from "./components/approve-button";
 import { ConsentCard } from "./components/consent-card";
 import { DenyButton } from "./components/deny-button";
@@ -16,11 +14,10 @@ import {
   DetailsValue,
 } from "./components/details-item";
 import { FailureAlert, SuccessRedirect } from "./components/form";
+import { getAuthorizationDetails } from "./cache";
 
 const getInitial = (value: string) =>
   value.trim().charAt(0).toUpperCase() || "?";
-
-import { getAuthorizationDetails } from "./cache";
 
 const { Suspend } = suspend(getAuthorizationDetails, {
   fallback: <SkeletonLine className="min-w-28" />,
@@ -31,8 +28,6 @@ export default withSuspend({ Suspend })(ConsentPage);
 async function ConsentPage({
   Suspend: OAuthDetails,
 }: PageSuspend<typeof Suspend>) {
-  const currentLocale = await locale();
-
   return (
     <main className="flex items-center justify-center">
       <div className="flex w-full flex-col gap-6">
@@ -58,7 +53,7 @@ async function ConsentPage({
         >
           <DetailsList>
             <DetailsItem>
-              <DetailsLabel>{await t("client")}</DetailsLabel>
+              <DetailsLabel>Client</DetailsLabel>
               <DetailsValue>
                 <OAuthDetails>
                   {(details) => <span>{details.client.name}</span>}
@@ -66,7 +61,7 @@ async function ConsentPage({
               </DetailsValue>
             </DetailsItem>
             <DetailsItem>
-              <DetailsLabel>{await t("redirectsTo")}</DetailsLabel>
+              <DetailsLabel>Redirects to</DetailsLabel>
               <DetailsValue>
                 <OAuthDetails>
                   {(details) => <span>{details.redirect_uri}</span>}
@@ -74,7 +69,7 @@ async function ConsentPage({
               </DetailsValue>
             </DetailsItem>
             <DetailsItem>
-              <DetailsLabel>{await t("signedInAs")}</DetailsLabel>
+              <DetailsLabel>Signed in as</DetailsLabel>
               <DetailsValue>
                 <OAuthDetails>
                   {(details) => <span>{details.user.email}</span>}
@@ -82,7 +77,7 @@ async function ConsentPage({
               </DetailsValue>
             </DetailsItem>
             <DetailsItem>
-              <DetailsLabel>{await t("scopes")}</DetailsLabel>
+              <DetailsLabel>Scopes</DetailsLabel>
               <DetailsValue>
                 <OAuthDetails>
                   {(details) => (
@@ -92,16 +87,16 @@ async function ConsentPage({
               </DetailsValue>
             </DetailsItem>
           </DetailsList>
-          <p className="text-muted-foreground text-sm">{await t("notice")}</p>
+          <p className="text-muted-foreground text-sm">
+            Allow access only if you recognize this application. It can act on
+            your behalf only within the requested permissions and the access you
+            already have.
+          </p>
         </ConsentCard>
         <CardFooter className="justify-end">
           <OAuthDetails fallback={<></>}>
             {(details) => (
-              <Action
-                args={[currentLocale]}
-                action={decideConsent}
-                initialData={null as never}
-              >
+              <Action action={decideConsent} initialData={null as never}>
                 <SuccessRedirect />
                 <div className="flex w-full flex-col gap-3">
                   <FailureAlert />
