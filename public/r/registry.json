@@ -1,0 +1,62 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "supabase-nextjs",
+  "homepage": "https://github.com/MiroslavPetrik/supabase-nextjs",
+  "items": [
+    {
+      "name": "oauth-consent-nextjs-ssr",
+      "type": "registry:block",
+      "title": "OAuth Consent",
+      "description": "Supabase OAuth 2.1 authorization consent page with approve and deny actions.",
+      "dependencies": ["@supabase/supabase-js@latest"],
+      "registryDependencies": [
+        "https://supabase.com/ui/r/supabase-client-nextjs.json",
+        "card",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "app/oauth/consent/page.tsx",
+          "type": "registry:page",
+          "target": "app/oauth/consent/page.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/index.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/index.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/action.ts",
+          "type": "registry:file",
+          "target": "components/oauth-consent-form/action.ts"
+        },
+        {
+          "path": "components/oauth-consent-form/components/consent-decision.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/components/consent-decision.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/components/consent-details.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/components/consent-details.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/components/consent-header.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/components/consent-header.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/components/consent-shell.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/components/consent-shell.tsx"
+        },
+        {
+          "path": "components/oauth-consent-form/components/error-boundary.tsx",
+          "type": "registry:component",
+          "target": "components/oauth-consent-form/components/error-boundary.tsx"
+        }
+      ],
+      "docs": "Requires NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Enable the OAuth server in supabase/config.toml under [auth.oauth_server] and set authorization_url_path = \"/oauth/consent\"."
+    }
+  ]
+}
