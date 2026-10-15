@@ -6,10 +6,10 @@ Uses server data fetching & server actions instead of the [`supabase-js`](https:
 
 The Next.js versions of the Supabase components should not just reuse the React SPA hooks. Instead, they should leverage the idiomatic framework features. Namely:
 
-- **Suspense** for declarative loading state, enabling [static shell maxxing](https://github.com/MiroslavPetrik/next-suspend)
-- **catchError** for custom error boundaries
-- **useActionState() & "use server"** for server actions with implicit pending state
-- **useFormStatus()** for submit action tracking
+- [**Suspense**](./components/oauth-consent-form/index.tsx#L20) for declarative loading state, enabling [static shell maxxing](https://github.com/MiroslavPetrik/next-suspend)
+- [**catchError**](./components//oauth-consent-form/components/error-boundary.tsx#L6) for custom error boundaries
+- [**useActionState() & "use server"**](./components//oauth-consent-form/components/consent-decision.tsx#L14) for server actions with implicit pending state
+- [**useFormStatus()**](./components/oauth-consent-form/components/consent-decision.tsx#L60) for submit action tracking
 
 This leads not just to cleaner & easy to read code, but also to better performance, e.g. by eliminating the `supabase-js` from the bundle.
 
