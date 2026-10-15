@@ -1,0 +1,66 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "oauth-consent-nextjs-ssr",
+  "title": "OAuth Consent",
+  "description": "Supabase OAuth 2.1 authorization consent page with approve and deny actions.",
+  "dependencies": [
+    "@supabase/supabase-js@latest"
+  ],
+  "registryDependencies": [
+    "https://supabase.com/ui/r/supabase-client-nextjs.json",
+    "card",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "app/oauth/consent/page.tsx",
+      "content": "import { AuthorizationDetailsForm } from \"@/components/oauth-consent-form\";\r\ntype Props = {\r\n  searchParams: Promise<{\r\n    authorization_id?: string;\r\n  }>;\r\n};\r\n\r\nexport default function ConsentPage({ searchParams }: Props) {\r\n  return (\r\n    <div className=\"flex min-h-svh w-full items-center justify-center p-6 md:p-10\">\r\n      <div className=\"w-full max-w-sm\">\r\n        <AuthorizationDetailsForm\r\n          authorizationId={searchParams.then((params) => {\r\n            if (!params.authorization_id) {\r\n              throw new Error(\"Authorization ID is required\");\r\n            }\r\n\r\n            return params.authorization_id;\r\n          })}\r\n        />\r\n      </div>\r\n    </div>\r\n  );\r\n}\r\n",
+      "type": "registry:page",
+      "target": "app/oauth/consent/page.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/index.tsx",
+      "content": "import { Suspense } from \"react\";\r\nimport { Card } from \"@/components/ui/card\";\r\nimport { ConsentHeader } from \"./components/consent-header\";\r\nimport { ConsentDetails } from \"./components/consent-details\";\r\nimport { ConsentDecision } from \"./components/consent-decision\";\r\nimport { ConsentShell } from \"./components/consent-shell\";\r\n\r\nimport { AuthorizationErrorBoundary } from \"./components/error-boundary\";\r\nimport { isAuthSessionMissingError } from \"@supabase/supabase-js\";\r\nimport { redirect } from \"next/navigation\";\r\nimport { createClient } from \"@/lib/supabase/server\";\r\n\r\ntype Props = {\r\n  authorizationId: Promise<string>;\r\n};\r\n\r\nexport function AuthorizationDetailsForm({ authorizationId }: Props) {\r\n  return (\r\n    <AuthorizationErrorBoundary>\r\n      <Suspense\r\n        fallback={\r\n          <ConsentShell>\r\n            <p>Loading authorization request...</p>\r\n          </ConsentShell>\r\n        }\r\n      >\r\n        <AuthorizationDetails authorizationId={authorizationId} />\r\n      </Suspense>\r\n    </AuthorizationErrorBoundary>\r\n  );\r\n}\r\n\r\nasync function AuthorizationDetails({ authorizationId }: Props) {\r\n  const details = await getAuthorizationDetails(await authorizationId);\r\n\r\n  return (\r\n    <Card>\r\n      <ConsentHeader productName=\"My App\" clientName={details.client.name} />\r\n      <ConsentDetails details={details} />\r\n      <ConsentDecision authorizationId={details.authorization_id} />\r\n    </Card>\r\n  );\r\n}\r\n\r\nasync function getAuthorizationDetails(authorizationId: string) {\r\n  const supabase = await createClient();\r\n  const { data, error } =\r\n    await supabase.auth.oauth.getAuthorizationDetails(authorizationId);\r\n\r\n  if (error) {\r\n    if (isAuthSessionMissingError(error)) {\r\n      redirect(\r\n        withSearchParams(\"/auth/login\", {\r\n          next: getConsentUrl(authorizationId),\r\n        }),\r\n      );\r\n    }\r\n\r\n    throw error;\r\n  }\r\n\r\n  if (!(\"authorization_id\" in data)) {\r\n    redirect(data.redirect_url);\r\n  }\r\n\r\n  return data;\r\n}\r\n\r\nfunction getConsentUrl(authorization_id: string) {\r\n  return withSearchParams(\"/oauth/consent\", { authorization_id });\r\n}\r\n\r\nconst withSearchParams = (path: string, params: Record<string, string>) => {\r\n  const searchParams = new URLSearchParams(Object.entries(params));\r\n  const queryString = searchParams.toString();\r\n  return `${path}?${queryString}`;\r\n};\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/index.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/action.ts",
+      "content": "\"use server\";\r\n\r\nimport { createClient } from \"@/lib/supabase/server\";\r\nimport { redirect } from \"next/navigation\";\r\nexport type ConsentState = {\r\n  error?: string;\r\n} | null;\r\n\r\nexport async function decideConsent(\r\n  _state: ConsentState,\r\n  formData: FormData,\r\n): Promise<ConsentState> {\r\n  const authorizationId = String(formData.get(\"authorizationId\") ?? \"\");\r\n  const decision = formData.get(\"action\");\r\n\r\n  const supabase = await createClient();\r\n  const { data: userData } = await supabase.auth.getUser();\r\n  if (!userData.user) {\r\n    return { error: \"You must be signed in to continue.\" };\r\n  }\r\n\r\n  const { data, error } =\r\n    decision === \"approve\"\r\n      ? await supabase.auth.oauth.approveAuthorization(authorizationId, {\r\n          skipBrowserRedirect: true,\r\n        })\r\n      : await supabase.auth.oauth.denyAuthorization(authorizationId, {\r\n          skipBrowserRedirect: true,\r\n        });\r\n\r\n  if (error) {\r\n    return { error: error.message };\r\n  }\r\n\r\n  if (!data.redirect_url) {\r\n    return {\r\n      error:\r\n        \"The server did not return a redirect. Start again from your OAuth client.\",\r\n    };\r\n  }\r\n\r\n  redirect(data.redirect_url);\r\n}\r\n",
+      "type": "registry:file",
+      "target": "components/oauth-consent-form/action.ts"
+    },
+    {
+      "path": "components/oauth-consent-form/components/consent-decision.tsx",
+      "content": "\"use client\";\r\n\r\nimport { useActionState } from \"react\";\r\nimport { useFormStatus } from \"react-dom\";\r\nimport { Button } from \"@/components/ui/button\";\r\nimport { decideConsent } from \"../action\";\r\nimport { CardFooter } from \"@/components/ui/card\";\r\n\r\nexport function ConsentDecision({\r\n  authorizationId,\r\n}: {\r\n  authorizationId: string;\r\n}) {\r\n  const [state, formAction, isPending] = useActionState(decideConsent, null);\r\n\r\n  return (\r\n    <CardFooter className=\"flex w-full flex-col gap-3\">\r\n      {state?.error && (\r\n        <p role=\"alert\" className=\"text-sm text-destructive\">\r\n          {state.error}\r\n        </p>\r\n      )}\r\n      <div className=\"flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end\">\r\n        <form action={formAction}>\r\n          <input type=\"hidden\" name=\"authorizationId\" value={authorizationId} />\r\n          <input type=\"hidden\" name=\"action\" value=\"deny\" />\r\n          <SubmitButton\r\n            label=\"Deny\"\r\n            pendingLabel=\"Denying...\"\r\n            variant=\"outline\"\r\n            disabled={isPending}\r\n          />\r\n        </form>\r\n        <form action={formAction}>\r\n          <input type=\"hidden\" name=\"authorizationId\" value={authorizationId} />\r\n          <input type=\"hidden\" name=\"action\" value=\"approve\" />\r\n          <SubmitButton\r\n            label=\"Allow access\"\r\n            pendingLabel=\"Allowing...\"\r\n            variant=\"default\"\r\n            disabled={isPending}\r\n          />\r\n        </form>\r\n      </div>\r\n    </CardFooter>\r\n  );\r\n}\r\n\r\nexport function SubmitButton({\r\n  label,\r\n  pendingLabel,\r\n  variant,\r\n  disabled,\r\n}: {\r\n  label: string;\r\n  pendingLabel: string;\r\n  variant: \"default\" | \"outline\";\r\n  disabled: boolean;\r\n}) {\r\n  const { pending } = useFormStatus();\r\n\r\n  return (\r\n    <Button type=\"submit\" size=\"sm\" variant={variant} disabled={disabled}>\r\n      {pending ? pendingLabel : label}\r\n    </Button>\r\n  );\r\n}\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/components/consent-decision.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/components/consent-details.tsx",
+      "content": "import { PropsWithChildren } from \"react\";\r\nimport type { OAuthAuthorizationDetails } from \"@supabase/supabase-js\";\r\nimport { CardContent } from \"@/components/ui/card\";\r\n\r\nexport function ConsentDetails({\r\n  details,\r\n}: {\r\n  details: OAuthAuthorizationDetails;\r\n}) {\r\n  return (\r\n    <CardContent className=\"space-y-6\">\r\n      <DetailsList>\r\n        <DetailsItem>\r\n          <DetailsLabel>Client</DetailsLabel>\r\n          <DetailsValue>\r\n            <span>{details.client.name}</span>\r\n          </DetailsValue>\r\n        </DetailsItem>\r\n        <DetailsItem>\r\n          <DetailsLabel>Redirects to</DetailsLabel>\r\n          <DetailsValue>\r\n            <span>{details.redirect_uri}</span>\r\n          </DetailsValue>\r\n        </DetailsItem>\r\n        <DetailsItem>\r\n          <DetailsLabel>Signed in as</DetailsLabel>\r\n          <DetailsValue>\r\n            <span>{details.user.email}</span>\r\n          </DetailsValue>\r\n        </DetailsItem>\r\n        <DetailsItem>\r\n          <DetailsLabel>Scopes</DetailsLabel>\r\n          <DetailsValue>\r\n            <span>{details.scope.split(\" \").join(\", \")}</span>\r\n          </DetailsValue>\r\n        </DetailsItem>\r\n      </DetailsList>\r\n      <p className=\"text-muted-foreground text-sm\">\r\n        Allow access only if you recognize this application. It can act on your\r\n        behalf only within the requested permissions and the access you already\r\n        have.\r\n      </p>\r\n    </CardContent>\r\n  );\r\n}\r\n\r\nfunction DetailsList({ children }: PropsWithChildren) {\r\n  return <dl className=\"divide-y rounded-lg border text-sm\">{children}</dl>;\r\n}\r\n\r\nfunction DetailsItem({ children }: PropsWithChildren) {\r\n  return (\r\n    <div className=\"flex items-center justify-between gap-6 p-4\">\r\n      {children}\r\n    </div>\r\n  );\r\n}\r\n\r\nfunction DetailsLabel({ children }: PropsWithChildren) {\r\n  return <dt className=\"text-muted-foreground\">{children}</dt>;\r\n}\r\n\r\nfunction DetailsValue({ children }: PropsWithChildren) {\r\n  return (\r\n    <dd className=\"min-w-0 break-all text-right font-medium\">{children}</dd>\r\n  );\r\n}\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/components/consent-details.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/components/consent-header.tsx",
+      "content": "import { CardDescription, CardHeader, CardTitle } from \"@/components/ui/card\";\r\n\r\nconst getInitial = (value: string) =>\r\n  value.trim().charAt(0).toUpperCase() || \"?\";\r\n\r\nexport function ConsentHeader({\r\n  clientName,\r\n  productName,\r\n}: {\r\n  productName: string;\r\n  clientName: string;\r\n}) {\r\n  return (\r\n    <CardHeader className=\"items-center space-y-4 text-center\">\r\n      <div className=\"flex items-center justify-center\">\r\n        <div className=\"flex size-12 items-center justify-center rounded-full border bg-muted font-medium\">\r\n          {getInitial(clientName)}\r\n        </div>\r\n        <div className=\"h-px w-8 bg-border\" aria-hidden=\"true\" />\r\n        <div className=\"flex size-12 items-center justify-center rounded-full border bg-muted font-medium\">\r\n          {getInitial(productName)}\r\n        </div>\r\n      </div>\r\n      <div className=\"space-y-1.5\">\r\n        <CardTitle className=\"font-medium text-lg tracking-normal\">\r\n          Authorize {clientName}\r\n        </CardTitle>\r\n        <CardDescription>\r\n          Review what this client gets access to.\r\n        </CardDescription>\r\n      </div>\r\n    </CardHeader>\r\n  );\r\n}\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/components/consent-header.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/components/consent-shell.tsx",
+      "content": "import { Card, CardContent } from \"@/components/ui/card\";\r\nimport { ConsentHeader } from \"./consent-header\";\r\n\r\nexport function ConsentShell({ children }: { children: React.ReactNode }) {\r\n  return (\r\n    <Card>\r\n      <ConsentHeader clientName=\"OAuth Client\" productName=\"My App\" />\r\n      <CardContent>{children}</CardContent>\r\n    </Card>\r\n  );\r\n}\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/components/consent-shell.tsx"
+    },
+    {
+      "path": "components/oauth-consent-form/components/error-boundary.tsx",
+      "content": "\"use client\";\r\n\r\nimport { catchError } from \"next/error\";\r\nimport { ConsentShell } from \"./consent-shell\";\r\n\r\nexport const AuthorizationErrorBoundary = catchError(function () {\r\n  return (\r\n    <ConsentShell>\r\n      <p role=\"alert\" className=\"text-sm text-destructive\">\r\n        Unable to load the authorization request. Start again from your OAuth\r\n        client.\r\n      </p>\r\n    </ConsentShell>\r\n  );\r\n});\r\n",
+      "type": "registry:component",
+      "target": "components/oauth-consent-form/components/error-boundary.tsx"
+    }
+  ],
+  "docs": "Requires NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Enable the OAuth server in supabase/config.toml under [auth.oauth_server] and set authorization_url_path = \"/oauth/consent\".",
+  "type": "registry:block"
+}

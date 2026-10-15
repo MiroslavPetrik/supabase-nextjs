@@ -8,7 +8,7 @@ import { ConsentShell } from "./components/consent-shell";
 import { AuthorizationErrorBoundary } from "./components/error-boundary";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/server";
+import { createClient } from "@/lib/supabase/server";
 
 type Props = {
   authorizationId: Promise<string>;
