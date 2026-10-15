@@ -1,11 +1,10 @@
 import { type PageSuspend, suspend, withSuspend } from "next-suspend";
-import { Action } from "react-form-action/client";
 import { SkeletonAvatar } from "@/components/skeleton/skeleton-avatar";
 import { SkeletonLine } from "@/components/skeleton/skeleton-line";
 import { CardFooter } from "@/components/ui/card";
-import { decideConsent } from "./action";
 import { ApproveButton } from "./components/approve-button";
 import { ConsentCard } from "./components/consent-card";
+import { DecideConsent } from "./components/decide-consent";
 import { DenyButton } from "./components/deny-button";
 import {
   DetailsItem,
@@ -13,7 +12,6 @@ import {
   DetailsList,
   DetailsValue,
 } from "./components/details-item";
-import { FailureAlert, SuccessRedirect } from "./components/form";
 import { getAuthorizationDetails } from "./cache";
 
 const getInitial = (value: string) =>
@@ -96,16 +94,10 @@ async function ConsentPage({
         <CardFooter className="justify-end">
           <OAuthDetails fallback={<></>}>
             {(details) => (
-              <Action action={decideConsent} initialData={null as never}>
-                <SuccessRedirect />
-                <div className="flex w-full flex-col gap-3">
-                  <FailureAlert />
-                  <div className="flex justify-between gap-2">
-                    <DenyButton authorizationId={details.authorization_id} />
-                    <ApproveButton authorizationId={details.authorization_id} />
-                  </div>
-                </div>
-              </Action>
+              <DecideConsent>
+                <DenyButton authorizationId={details.authorization_id} />
+                <ApproveButton authorizationId={details.authorization_id} />
+              </DecideConsent>
             )}
           </OAuthDetails>
         </CardFooter>
