@@ -12,27 +12,19 @@ export function ConsentDetails({
       <DetailsList>
         <DetailsItem>
           <DetailsLabel>Client</DetailsLabel>
-          <DetailsValue>
-            <span>{details.client.name}</span>
-          </DetailsValue>
+          <DetailsValue>{details.client.name}</DetailsValue>
         </DetailsItem>
         <DetailsItem>
           <DetailsLabel>Redirects to</DetailsLabel>
-          <DetailsValue>
-            <span>{details.redirect_uri}</span>
-          </DetailsValue>
+          <DetailsValue>{details.redirect_uri}</DetailsValue>
         </DetailsItem>
         <DetailsItem>
           <DetailsLabel>Signed in as</DetailsLabel>
-          <DetailsValue>
-            <span>{details.user.email}</span>
-          </DetailsValue>
+          <DetailsValue>{details.user.email}</DetailsValue>
         </DetailsItem>
         <DetailsItem>
           <DetailsLabel>Scopes</DetailsLabel>
-          <DetailsValue>
-            <span>{details.scope.split(" ").join(", ")}</span>
-          </DetailsValue>
+          <DetailsValue>{details.scope.split(" ").join(", ")}</DetailsValue>
         </DetailsItem>
       </DetailsList>
       <p className="text-muted-foreground text-sm">
